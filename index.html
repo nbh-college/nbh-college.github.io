@@ -244,6 +244,103 @@ details.notice[open] summary::after{content:"\2212"}
   .main{padding-block:20px 56px}
   .toast{bottom:28px}
 }
+   
+/* ---------- Obsidian Mint Neumorphism ---------- */
+
+:root[data-theme="dark"] .ibtn,
+:root[data-theme="dark"] .tile,
+:root[data-theme="dark"] .ledger,
+:root[data-theme="dark"] .scard,
+:root[data-theme="dark"] .empty,
+:root[data-theme="dark"] .chip,
+:root[data-theme="dark"] .search input,
+:root[data-theme="dark"] .btn:not(.pri) {
+  border-color: #293A32;
+  box-shadow:
+    4px 4px 10px rgba(0, 0, 0, 0.20),
+    -3px -3px 9px rgba(255, 255, 255, 0.018);
+}
+
+/* Soft raised buttons */
+:root[data-theme="dark"] .ibtn,
+:root[data-theme="dark"] .btn:not(.pri),
+:root[data-theme="dark"] .tile {
+  background: var(--surface);
+}
+
+/* Recessed input fields */
+:root[data-theme="dark"] .search input {
+  background: var(--bg);
+  box-shadow:
+    inset 3px 3px 7px rgba(0, 0, 0, 0.20),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.015);
+}
+
+/* Segmented controls */
+:root[data-theme="dark"] .seg {
+  background: var(--bg);
+  border: 1px solid #25352E;
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.16);
+}
+
+:root[data-theme="dark"] .seg > [aria-pressed="true"],
+:root[data-theme="dark"] .seg > [aria-current="page"] {
+  background: var(--surface-2);
+  color: var(--accent);
+  box-shadow:
+    2px 2px 5px rgba(0, 0, 0, 0.18),
+    -2px -2px 5px rgba(255, 255, 255, 0.02);
+}
+
+/* Mint interaction states */
+:root[data-theme="dark"] .nav-b[aria-current="page"] {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+:root[data-theme="dark"] .chip[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+:root[data-theme="dark"] .btn.pri {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+  box-shadow: 0 3px 9px rgba(0, 0, 0, 0.18);
+}
+
+/* Soft inset progress track */
+:root[data-theme="dark"] .progress .bar {
+  background: var(--bg);
+  box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.20);
+}
+
+:root[data-theme="dark"] .progress .bar i {
+  background: var(--accent);
+}
+
+/* Keep important notices readable */
+:root[data-theme="dark"] .tag.imp {
+  background: var(--stamp);
+  color: var(--stamp-ink);
+}
+
+/* Press feedback */
+@media (hover: hover) {
+  :root[data-theme="dark"] .tile:hover,
+  :root[data-theme="dark"] .ibtn:hover,
+  :root[data-theme="dark"] .btn:not(.pri):hover {
+    border-color: #40584B;
+  }
+}
+
+:root[data-theme="dark"] .tile:active,
+:root[data-theme="dark"] .ibtn:active {
+  box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.20);
+}
+
 </style>
 </head>
 <body>
