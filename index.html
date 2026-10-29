@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>College Saathi</title>
+<meta name="theme-color" content="#2446C9">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&family=Hind:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: notice-board register. Dated stub rows inside ledger blocks, one cobalt block for the
+   stay-at-home card, a marigold stamp for important notices. Phone: bottom tab bar. Desktop: left rail. */
+:root{
+  --bg:#F2F4F8;--surface:#FFFFFF;--surface-2:#E7EBF3;--ink:#121B2B;--ink-2:#47536A;--line:#D3DAE6;
+  --accent:#2446C9;--accent-ink:#FFFFFF;--accent-soft:#DDE4FA;
+  --stamp:#F4B400;--stamp-ink:#241A00;
+  --ok:#11785A;--warn:#8A5000;--bad:#B3261E;
+  --display:'Bricolage Grotesque','Hind',system-ui,sans-serif;
+  --body:'Hind',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --r:12px;
+  color-scheme:light;
+  padding-top:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0C1320;--surface:#141D2D;--surface-2:#1C2740;--ink:#E7ECF6;--ink-2:#9DAAC3;--line:#27344D;
+    --accent:#8AA2FF;--accent-ink:#0C1320;--accent-soft:#1F2C57;
+    --ok:#4FD1A1;--warn:#F2B04A;--bad:#FF8F85;color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0C1320;--surface:#141D2D;--surface-2:#1C2740;--ink:#E7ECF6;--ink-2:#9DAAC3;--line:#27344D;
+  --accent:#8AA2FF;--accent-ink:#0C1320;--accent-soft:#1F2C57;
+  --ok:#4FD1A1;--warn:#F2B04A;--bad:#FF8F85;color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  overflow-wrap:break-word}
+[hidden]{display:none!important}
+h1,h2,h3,p{margin:0}
+a{color:var(--accent)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.shell{max-width:1120px;margin:0 auto}
+.main{min-width:0;padding-block:10px 104px}
+
+/* ---------- header ---------- */
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding-block:6px 14px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 220px}
+.mark{flex:none;min-width:44px;height:44px;padding:0 8px;border-radius:10px;background:var(--accent);color:var(--accent-ink);
+  display:grid;place-items:center;font:700 13px var(--display);letter-spacing:.04em}
+.brand-t{min-width:0}
+.brand-t b{display:block;font:700 15px/1.25 var(--display);letter-spacing:-.01em}
+.brand-t span{display:block;font-size:13px;color:var(--ink-2)}
+.tools{display:flex;gap:8px;flex:none}
+.ibtn{display:inline-grid;place-items:center;min-width:42px;height:42px;padding:0 12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--surface);color:var(--ink);cursor:pointer;text-decoration:none;font:600 14px var(--body)}
+.ibtn svg{width:20px;height:20px}
+
+.seg{display:flex;gap:4px;padding:4px;background:var(--surface-2);border-radius:12px;width:100%}
+.seg>*{flex:1;display:grid;place-items:center;min-height:38px;padding:0 10px;border:0;border-radius:9px;background:transparent;
+  color:var(--ink-2);font:600 14px var(--body);cursor:pointer;text-decoration:none;white-space:nowrap}
+.seg>[aria-pressed="true"],.seg>[aria-current="page"]{background:var(--surface);color:var(--accent);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.seg.sub{margin-bottom:16px}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.nav-b{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;border-radius:10px;
+  color:var(--ink-2);text-decoration:none;font:600 12px var(--body)}
+.nav-b svg{width:23px;height:23px}
+.nav-b[aria-current="page"]{color:var(--accent)}
+.nav-help{display:none}
+
+/* ---------- type + blocks ---------- */
+.h1{font:700 clamp(26px,6.5vw,34px)/1.1 var(--display);letter-spacing:-.025em;text-wrap:balance;margin-top:4px}
+.lede{color:var(--ink-2);margin:6px 0 16px;max-width:62ch}
+.muted{color:var(--ink-2);font-size:14px}
+.sec{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:26px 0 10px}
+.sec h2{font:700 19px/1.2 var(--display);letter-spacing:-.01em}
+.sec a{font:600 14px var(--body);white-space:nowrap}
+.demo{background:var(--stamp);color:var(--stamp-ink);padding:9px 12px;border-radius:10px;font:500 12.5px/1.4 var(--mono);margin-bottom:14px}
+.empty{padding:26px 16px;text-align:center;color:var(--ink-2);background:var(--surface);border:1px dashed var(--line);border-radius:var(--r)}
+.empty .acts{justify-content:center;margin-top:12px}
+
+.today{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin-bottom:16px}
+.today .big{font:700 clamp(38px,11vw,56px)/1 var(--display);letter-spacing:-.035em}
+.today .sub{font:500 13px var(--mono);color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em}
+
+.away{display:grid;gap:12px;padding:18px;border-radius:var(--r);background:var(--accent);color:var(--accent-ink)}
+.away h2{font:700 22px/1.15 var(--display);letter-spacing:-.02em}
+.away p{opacity:.95;max-width:56ch}
+.away .btn{background:var(--accent-ink);color:var(--accent);border-color:transparent}
+.away .btn.ghost{background:transparent;color:var(--accent-ink);border-color:var(--accent-ink)}
+
+.cols{display:grid;gap:0 24px;grid-template-columns:minmax(0,1fr)}
+.cols>*{min-width:0}
+@media (min-width:760px){.cols{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:760px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.tile{display:flex;align-items:center;gap:10px;min-width:0;padding:14px;border:1px solid var(--line);border-radius:var(--r);
+  background:var(--surface);color:var(--ink);text-decoration:none;font-weight:600}
+.tile svg{flex:none;width:24px;height:24px;color:var(--accent)}
+
+.ledger{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.ledger>*+*{border-top:1px solid var(--line)}
+.row{display:grid;gap:10px 12px;padding:14px 16px;align-items:start;grid-template-columns:minmax(0,1fr)}
+.row h3,.rtext h3{font:600 16px/1.35 var(--body)}
+.rtext{min-width:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:5px}
+.tag{display:inline-block;font:500 11.5px/1.5 var(--mono);text-transform:uppercase;letter-spacing:.06em;padding:1px 7px;border-radius:6px;
+  background:var(--surface-2);color:var(--ink-2)}
+.tag.imp{background:var(--stamp);color:var(--stamp-ink);transform:rotate(-2deg);font-weight:500}
+.tag.new{background:var(--accent);color:var(--accent-ink)}
+
+.stub{width:52px;text-align:center;border-radius:10px;background:var(--surface-2);padding:7px 0 6px;line-height:1}
+.stub b{display:block;font:700 22px var(--display);letter-spacing:-.02em}
+.stub span{display:block;margin-top:4px;font:500 10.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2)}
+
+.due{font:500 12.5px/1.35 var(--mono);color:var(--ink-2);text-align:right}
+.due.over{color:var(--bad)}.due.soon{color:var(--warn)}.due.ok{color:var(--ink-2)}
+.due span{color:var(--ink-2)}
+.rtext>.due{text-align:left;margin-top:4px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 14px;border-radius:10px;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 14px var(--body);cursor:pointer;text-decoration:none}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.sm{min-height:34px;padding:0 11px;font-size:13px}
+.btn svg{width:16px;height:16px}
+.btn[aria-disabled="true"]{opacity:.5;pointer-events:none}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+
+/* notices */
+details.notice summary{display:grid;grid-template-columns:52px minmax(0,1fr) 20px;gap:12px;padding:14px 16px;cursor:pointer;list-style:none;align-items:start}
+details.notice summary::-webkit-details-marker{display:none}
+details.notice summary::after{content:"+";font:500 20px/1 var(--mono);color:var(--ink-2);text-align:right}
+details.notice[open] summary::after{content:"\2212"}
+.rmore{padding:0 16px 16px calc(16px + 52px + 12px);display:grid;gap:12px}
+.rmore p{max-width:62ch}
+@media (max-width:420px){.rmore{padding-left:16px}}
+
+/* chips + search */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:10px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:36px;padding:0 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);
+  font:500 14px var(--body);cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.search{margin-bottom:12px}
+.search input{width:100%;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink)}
+.count{font:500 12px var(--mono);color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin:2px 0 8px}
+
+/* notes, updates, dates */
+.row.note,.row.upd{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.row.drow{grid-template-columns:52px minmax(0,1fr) auto;align-items:center}
+.row.link{grid-template-columns:minmax(0,1fr) auto;align-items:center}
+.hw{margin-top:4px;font-size:15px}
+.hw b{font-weight:600}
+.dh{font:700 15px var(--display);margin:18px 0 8px;letter-spacing:-.005em}
+.dh:first-child{margin-top:0}
+
+/* syllabus */
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.scard header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 16px}
+.scard header h3{font:700 18px/1.2 var(--display);letter-spacing:-.01em}
+.unit{border-top:1px solid var(--line)}
+.unit summary{display:flex;gap:12px;align-items:baseline;padding:12px 16px;cursor:pointer;list-style:none;font-weight:600}
+.unit summary::-webkit-details-marker{display:none}
+.unit summary::after{content:"+";margin-left:auto;font:500 18px var(--mono);color:var(--ink-2)}
+.unit[open] summary::after{content:"\2212"}
+.un{flex:none;font:500 11.5px var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);min-width:52px}
+.unit p{padding:0 16px 14px 80px;color:var(--ink-2)}
+@media (max-width:420px){.unit p{padding-left:16px}}
+
+/* tasks */
+.row.task{grid-template-columns:26px minmax(0,1fr) auto}
+.chk{display:grid;padding-top:2px}
+.chk input{width:22px;height:22px;margin:0;accent-color:var(--accent);cursor:pointer}
+.row.task.isdone h3{text-decoration:line-through;color:var(--ink-2)}
+.lnk{display:inline-block;margin-top:4px;font:600 14px var(--body)}
+.progress{display:grid;gap:8px;margin-bottom:14px}
+.progress .bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.progress .bar i{display:block;height:100%;background:var(--ok);border-radius:99px}
+
+/* timetable */
+.row.period{grid-template-columns:96px minmax(0,1fr) auto;align-items:center}
+.ptime{font:500 13px var(--mono);color:var(--ink-2)}
+.row.period.now{background:var(--accent-soft)}
+.row.period.past{opacity:.55}
+.recess{padding:8px 16px;background:var(--surface-2);color:var(--ink-2);font:500 12px var(--mono);text-transform:uppercase;letter-spacing:.08em;text-align:center}
+
+/* help */
+.faq details{padding:0}
+.faq summary{display:flex;gap:12px;justify-content:space-between;align-items:baseline;padding:14px 16px;cursor:pointer;list-style:none;font-weight:600}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font:500 18px var(--mono);color:var(--ink-2)}
+.faq details[open] summary::after{content:"\2212"}
+.faq details p{padding:0 16px 16px;color:var(--ink-2);max-width:62ch}
+.phone{font:500 15px var(--mono);letter-spacing:.02em}
+
+.foot{padding-block:28px 8px;color:var(--ink-2);font-size:13px;display:grid;gap:4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:30;
+  background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:999px;font:600 14px var(--body)}
+
+@media (prefers-reduced-motion:no-preference){
+  .view-in{animation:vin .18s ease-out}
+  @keyframes vin{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
+}
+
+/* ---------- desktop ---------- */
+@media (min-width:900px){
+  .shell{display:grid;grid-template-columns:190px minmax(0,1fr);gap:36px;align-items:start}
+  .nav{position:sticky;top:0;left:auto;right:auto;bottom:auto;flex-direction:column;gap:4px;background:none;border:0;padding:24px 0}
+  .nav-b{flex-direction:row;gap:12px;justify-content:flex-start;padding:10px 12px;font-size:15px}
+  .nav-b[aria-current="page"]{background:var(--accent-soft)}
+  .nav-help{display:flex}
+  .help-btn{display:none!important}
+  .main{padding-block:20px 56px}
+  .toast{bottom:28px}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav" id="nav" aria-label="Main"></nav>
+  <div class="main">
+    <header class="top" id="top"></header>
+    <main id="view"></main>
+    <footer class="foot" id="foot"></footer>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+'use strict';
+var D = window.COLLEGE;
+var view = document.getElementById('view');
+if (!D) {
+  view.innerHTML = '<div class="empty">data.js was not found. Keep data.js in the same folder as index.html.</div>';
+  return;
+}
+const $ = (s, r) => (r || document).querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const safeUrl = u => /^https?:\/\//i.test(u || '') ? u : '';
+const fill = (s, o) => s.replace(/\{(\w+)\}/g, (m, k) => o[k]);
+const store = {
+  get(k, def) { try { const v = localStorage.getItem('cs.' + k); return v == null ? def : JSON.parse(v); } catch (e) { return def; } },
+  set(k, v) { try { localStorage.setItem('cs.' + k, JSON.stringify(v)); } catch (e) {} }
+};
+
+/* ---------- strings ---------- */
+const T = {
+en: {
+  home: 'Home', notices: 'Notices', study: 'Study', work: 'Tasks', cls: 'Class', help: 'Help',
+  tabNotes: 'Notes & papers', tabSyl: 'Syllabus', tabTT: 'Timetable', tabUpd: 'Class updates', tabDates: 'Key dates',
+  all: 'All', open: 'Open', copy: 'Copy', copied: 'Copied', copyFail: 'Could not copy', soon: 'Link soon',
+  imp: 'Important', isNew: 'New', lastDate: 'Last date', closed: 'Closed',
+  today: 'Today', yesterday: 'Yesterday', tomorrow: 'Tomorrow', theme: 'Switch theme', streamLabel: 'Stream',
+  demo: 'Demo data. Replace everything in data.js with your real notices, notes and timetable.',
+  pickStream: 'Pick your stream above to see your own timetable, notes and tasks.',
+  away: 'Learning from home?', awayText: 'Missed a class or not coming this week? Everything you need is here.',
+  whatTaught: 'What was taught', getNotes: 'Get notes', joinOnline: 'Join online class', waGroup: 'WhatsApp group',
+  todayClasses: "Today's classes", noClassToday: 'No classes today.', recess: 'Recess', now: 'Now', next: 'Next',
+  impNotices: 'Important notices', allNotices: 'All notices', dueSoon: 'Due soon', allTasks: 'All tasks',
+  keyDates: 'Key dates', allDates: 'All dates', quick: 'Quick links', nothingDue: 'Nothing pending.', nothingDates: 'No upcoming dates.',
+  noticesH: 'Notices', noticesSub: 'Official updates from the college and your class.', searchNotices: 'Search notices',
+  noNotices: 'No notices match.', copyWA: 'Copy for WhatsApp',
+  notesH: 'Notes and previous papers', notesSub: 'Shared by teachers and classmates.', searchNotes: 'Search notes', noNotes: 'Nothing here yet.',
+  tNotes: 'Notes', tPyq: 'Previous papers', tVideo: 'Video', tBook: 'Book', tOther: 'Other',
+  sylH: 'Syllabus', sylSub: 'Unit-wise topics for every subject.', searchSyl: 'Search a topic', credits: 'credits', marksLbl: 'Marks',
+  fullSyl: 'Full syllabus', noSyl: 'No topics match.', unit: 'Unit',
+  workH: 'Tasks and assignments', workSub: 'Tick a task when it is done. Ticks are saved on this phone only.',
+  pending: 'Pending', done: 'Done', doneOf: '{a} of {b} done', noTasks: 'No tasks here.',
+  overdue: '{n} days late', dueToday: 'Due today', dueTomorrow: 'Due tomorrow', dueIn: 'In {n} days',
+  modeClass: 'Submit in class', modeOnline: 'Submit online', modeEmail: 'Email to teacher', qsheet: 'Question sheet', marksShort: 'marks',
+  ttH: 'Timetable', ttSub: 'Period-wise schedule for your stream.', noStreamTT: 'Choose your stream to see the timetable.',
+  updH: 'Class updates', updSub: 'What was taught each day and the homework. Useful if you missed class.', noUpd: 'No updates yet.', homework: 'Homework',
+  datesH: 'Key dates', datesSub: 'Tests, holidays and events.', upcoming: 'Upcoming', past: 'Earlier', passed: 'Passed',
+  helpH: 'Help', helpSub: 'Answers, useful links and who to contact.', faq: 'Common questions', searchFaq: 'Search questions',
+  noFaq: 'No questions match.', links: 'Useful links', contacts: 'Contacts',
+  verify: 'Always confirm important dates with the college office.', updated: 'Content updated'
+},
+hi: {
+  home: 'होम', notices: 'सूचनाएँ', study: 'पढ़ाई', work: 'असाइनमेंट', cls: 'कक्षा', help: 'सहायता',
+  tabNotes: 'नोट्स व पेपर', tabSyl: 'पाठ्यक्रम', tabTT: 'समय-सारणी', tabUpd: 'कक्षा अपडेट', tabDates: 'ज़रूरी तिथियाँ',
+  all: 'सभी', open: 'खोलें', copy: 'कॉपी', copied: 'कॉपी हो गया', copyFail: 'कॉपी नहीं हो सका', soon: 'लिंक जल्द',
+  imp: 'ज़रूरी', isNew: 'नया', lastDate: 'अंतिम तिथि', closed: 'बंद',
+  today: 'आज', yesterday: 'कल (बीता)', tomorrow: 'कल (आगामी)', theme: 'थीम बदलें', streamLabel: 'संकाय',
+  demo: 'यह डेमो डेटा है। data.js में सब कुछ अपनी असली सूचनाओं, नोट्स और समय-सारणी से बदलें।',
+  pickStream: 'अपना टाइमटेबल, नोट्स और असाइनमेंट देखने के लिए ऊपर अपना संकाय चुनें।',
+  away: 'घर से पढ़ रहे हैं?', awayText: 'क्लास छूट गई या इस हफ़्ते कॉलेज नहीं आ पा रहे? ज़रूरी सब कुछ यहीं है।',
+  whatTaught: 'क्या पढ़ाया गया', getNotes: 'नोट्स लें', joinOnline: 'ऑनलाइन क्लास से जुड़ें', waGroup: 'व्हाट्सऐप ग्रुप',
+  todayClasses: 'आज की कक्षाएँ', noClassToday: 'आज कक्षाएँ नहीं हैं।', recess: 'रिसेस', now: 'अभी', next: 'अगली',
+  impNotices: 'ज़रूरी सूचनाएँ', allNotices: 'सभी सूचनाएँ', dueSoon: 'जल्द जमा करें', allTasks: 'सभी असाइनमेंट',
+  keyDates: 'ज़रूरी तिथियाँ', allDates: 'सभी तिथियाँ', quick: 'त्वरित लिंक', nothingDue: 'कुछ बाकी नहीं है।', nothingDates: 'आगे कोई तिथि नहीं है।',
+  noticesH: 'सूचनाएँ', noticesSub: 'कॉलेज और आपकी कक्षा की आधिकारिक जानकारी।', searchNotices: 'सूचनाएँ खोजें',
+  noNotices: 'कोई सूचना नहीं मिली।', copyWA: 'व्हाट्सऐप के लिए कॉपी',
+  notesH: 'नोट्स और पिछले पेपर', notesSub: 'शिक्षकों और साथियों द्वारा साझा किए गए।', searchNotes: 'नोट्स खोजें', noNotes: 'अभी यहाँ कुछ नहीं है।',
+  tNotes: 'नोट्स', tPyq: 'पिछले पेपर', tVideo: 'वीडियो', tBook: 'पुस्तक', tOther: 'अन्य',
+  sylH: 'पाठ्यक्रम', sylSub: 'हर विषय के इकाई-वार टॉपिक।', searchSyl: 'टॉपिक खोजें', credits: 'क्रेडिट', marksLbl: 'अंक',
+  fullSyl: 'पूरा पाठ्यक्रम', noSyl: 'कोई टॉपिक नहीं मिला।', unit: 'इकाई',
+  workH: 'असाइनमेंट', workSub: 'काम पूरा होने पर टिक करें। टिक सिर्फ़ इसी फ़ोन में सेव रहते हैं।',
+  pending: 'बाकी', done: 'पूरे', doneOf: '{b} में से {a} पूरे', noTasks: 'यहाँ कोई असाइनमेंट नहीं है।',
+  overdue: '{n} दिन देर', dueToday: 'आज अंतिम दिन', dueTomorrow: 'कल अंतिम दिन', dueIn: '{n} दिन बाकी',
+  modeClass: 'कक्षा में जमा करें', modeOnline: 'ऑनलाइन जमा करें', modeEmail: 'शिक्षक को ईमेल करें', qsheet: 'प्रश्न-पत्र', marksShort: 'अंक',
+  ttH: 'समय-सारणी', ttSub: 'आपके संकाय की पीरियड-वार समय-सारणी।', noStreamTT: 'समय-सारणी देखने के लिए अपना संकाय चुनें।',
+  updH: 'कक्षा अपडेट', updSub: 'हर दिन क्या पढ़ाया गया और गृहकार्य क्या है। क्लास छूटने पर काम आएगा।', noUpd: 'अभी कोई अपडेट नहीं है।', homework: 'गृहकार्य',
+  datesH: 'ज़रूरी तिथियाँ', datesSub: 'परीक्षा, अवकाश और कार्यक्रम।', upcoming: 'आने वाली', past: 'पहले की', passed: 'बीत गई',
+  helpH: 'सहायता', helpSub: 'जवाब, काम के लिंक और संपर्क।', faq: 'आम सवाल', searchFaq: 'सवाल खोजें',
+  noFaq: 'कोई सवाल नहीं मिला।', links: 'काम के लिंक', contacts: 'संपर्क',
+  verify: 'ज़रूरी तिथियाँ कॉलेज कार्यालय से ज़रूर पुष्टि करें।', updated: 'जानकारी अपडेट'
+}
+};
+
+/* ---------- state ---------- */
+const CFG = D.config || {};
+const SUBJ = D.subjects || [];
+const SUB = {}; SUBJ.forEach(s => { SUB[s.id] = s; });
+const STREAMS = D.streams || [];
+const CATS = D.categories || {};
+const DAYKEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const TTDAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const MON_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MON_HI = ['जन॰', 'फ़र॰', 'मार्च', 'अप्रै॰', 'मई', 'जून', 'जुल॰', 'अग॰', 'सित॰', 'अक्टू॰', 'नव॰', 'दिस॰'];
+const DAY_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_HI = ['रविवार', 'सोमवार', 'मंगलवार', 'बुधवार', 'गुरुवार', 'शुक्रवार', 'शनिवार'];
+const DSH_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DSH_HI = ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'];
+
+let lang = store.get('lang', null) || ((navigator.language || '').slice(0, 2) === 'hi' ? 'hi' : 'en');
+let stream = store.get('stream', null);
+if (stream && !STREAMS.some(s => s.id === stream)) stream = null;
+let theme = store.get('theme', null);
+const doneSet = new Set(store.get('done', []));
+const ui = { nc: 'all', nq: '', ms: 'all', mt: 'all', mq: '', sq: '', wf: 'pending', td: null, us: 'all', hq: '' };
+let cur = {};
+
+const t = k => (T[lang] && T[lang][k]) || T.en[k] || k;
+const pick = (o, k) => (lang === 'hi' && o && o[k + 'Hi']) ? o[k + 'Hi'] : ((o && o[k]) || '');
+const MON = () => lang === 'hi' ? MON_HI : MON_EN;
+const dayName = i => (lang === 'hi' ? DAY_HI : DAY_EN)[i];
+const dayShort = key => (lang === 'hi' ? DSH_HI : DSH_EN)[DAYKEYS.indexOf(key)];
+const catName = id => CATS[id] ? (lang === 'hi' ? CATS[id].hi : CATS[id].en) : (id || '');
+
+/* ---------- dates ---------- */
+function pd(s) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || ''); return m ? new Date(+m[1], +m[2] - 1, +m[3], 12) : null; }
+function todayDate() { const x = new Date(); x.setHours(12, 0, 0, 0); return x; }
+function daysFrom(s) { const d = pd(s); return d ? Math.round((d - todayDate()) / 864e5) : 9999; }
+function fmtShort(s) {
+  const d = pd(s); if (!d) return '';
+  let o = d.getDate() + ' ' + MON()[d.getMonth()];
+  if (d.getFullYear() !== new Date().getFullYear()) o += ' ' + d.getFullYear();
+  return o;
+}
+function stub(s) {
+  const d = pd(s);
+  if (!d) return '<div class="stub"><b>-</b></div>';
+  return '<div class="stub"><b>' + d.getDate() + '</b><span>' + esc(MON()[d.getMonth()]) + '</span></div>';
+}
+function relDay(s) {
+  const n = daysFrom(s);
+  if (n === 0) return t('today');
+  if (n === -1) return t('yesterday');
+  if (n === 1) return t('tomorrow');
+  const d = pd(s);
+  return d ? dayName(d.getDay()) + ', ' + fmtShort(s) : s;
+}
+function dueInfo(s, isDeadline) {
+  const n = daysFrom(s); let cls = 'ok', txt;
+  if (n < 0) { cls = 'over'; txt = isDeadline ? t('closed') : fill(t('overdue'), { n: -n }); }
+  else if (n === 0) { cls = 'soon'; txt = t('dueToday'); }
+  else if (n === 1) { cls = 'soon'; txt = t('dueTomorrow'); }
+  else { cls = n <= 3 ? 'soon' : 'ok'; txt = fill(t('dueIn'), { n: n }); }
+  return { n: n, cls: cls, txt: txt };
+}
+const toMin = s => { const m = /^(\d{1,2}):(\d{2})/.exec(s || ''); return m ? (+m[1]) * 60 + (+m[2]) : 0; };
+
+/* ---------- filtering ---------- */
+function streamOk(streams) { if (!streams || streams === 'all' || !stream) return true; return streams.indexOf(stream) > -1; }
+function subjOk(id) { const s = SUB[id]; return !s || streamOk(s.streams); }
+function itemOk(o) { if (o.streams) return streamOk(o.streams); if (o.subject) return subjOk(o.subject); return true; }
+const visibleSubjects = () => SUBJ.filter(s => streamOk(s.streams));
+const subjName = id => SUB[id] ? pick(SUB[id], 'name') : id;
+const byDateDesc = (a, b) => (b.date || '').localeCompare(a.date || '');
+const notices = () => (D.notices || []).filter(itemOk).slice().sort(byDateDesc);
+const tasks = () => (D.assignments || []).filter(itemOk).slice().sort((a, b) => (a.due || '').localeCompare(b.due || ''));
+
+/* ---------- icons ---------- */
+const ICON = {
+  home: '<path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>',
+  bell: '<path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+  book: '<path d="M4 4h12a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3z"/><path d="M4 17a3 3 0 0 1 3-3h12"/>',
+  list: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><path d="M12 17h.01"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  moon: '<path d="M20 14A8 8 0 0 1 10 4a8 8 0 1 0 10 10z"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  copy: '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/>',
+  syl: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/>'
+};
+const icon = n => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICON[n] + '</svg>';
+
+/* ---------- small builders ---------- */
+const chip = (k, v, label) => '<button type="button" class="chip" data-act="set" data-k="' + k + '" data-v="' + esc(v) + '" aria-pressed="' + (ui[k] === v) + '">' + esc(label) + '</button>';
+const extLink = (url, label, cls) => '<a class="btn ' + (cls || 'sm') + '" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' + esc(label) + ' ' + icon('ext') + '</a>';
+const emptyBox = txt => '<div class="empty">' + esc(txt) + '</div>';
+const secHead = (title, route, linkText) => '<div class="sec"><h2>' + esc(title) + '</h2>' + (route ? '<a href="#' + route + '">' + esc(linkText) + '</a>' : '') + '</div>';
+const pageHead = (h, sub) => '<h1 class="h1">' + esc(t(h)) + '</h1><p class="lede">' + esc(t(sub)) + '</p>';
+function subTabs(group, active) {
+  const defs = group === 'study'
+    ? [['notes', 'tabNotes'], ['syllabus', 'tabSyl']]
+    : [['timetable', 'tabTT'], ['updates', 'tabUpd'], ['dates', 'tabDates']];
+  return '<nav class="seg sub" aria-label="Section">' + defs.map(d => '<a href="#' + d[0] + '"' + (d[0] === active ? ' aria-current="page"' : '') + '>' + esc(t(d[1])) + '</a>').join('') + '</nav>';
+}
+const searchBox = (key, ph) => '<div class="search"><input type="search" id="q-' + key + '" data-q="' + key + '" value="' + esc(ui[key]) + '" placeholder="' + esc(t(ph)) + '" aria-label="' + esc(t(ph)) + '" autocomplete="off"></div>';
+
+/* ---------- notice ---------- */
+function noticeEl(n) {
+  const dif = daysFrom(n.date);
+  const isNew = dif <= 0 && dif >= -3;
+  const link = safeUrl(n.link);
+  const dl = n.deadline ? dueInfo(n.deadline, true) : null;
+  const body = esc(pick(n, 'body')).replace(/\n/g, '<br>');
+  return '<details class="notice"><summary>' + stub(n.date) +
+    '<div class="rtext"><div class="tags">' +
+    (n.important ? '<span class="tag imp">' + esc(t('imp')) + '</span>' : '') +
+    '<span class="tag">' + esc(catName(n.cat)) + '</span>' +
+    (isNew ? '<span class="tag new">' + esc(t('isNew')) + '</span>' : '') +
+    '</div><h3>' + esc(pick(n, 'title')) + '</h3>' +
+    (dl ? '<div class="due ' + dl.cls + '">' + esc(t('lastDate')) + ': ' + esc(fmtShort(n.deadline)) + ' · ' + esc(dl.txt) + '</div>' : '') +
+    '</div></summary><div class="rmore">' + (body ? '<p>' + body + '</p>' : '') +
+    '<div class="acts">' + (link ? extLink(link, n.linkLabel || t('open'), 'pri sm') : '') +
+    '<button type="button" class="btn sm" data-act="copyn" data-id="' + esc(n.id) + '">' + icon('copy') + ' ' + esc(t('copyWA')) + '</button></div></div></details>';
+}
+function resNotices() {
+  const q = ui.nq.trim().toLowerCase();
+  const list = notices().filter(n => ui.nc === 'all' || n.cat === ui.nc)
+    .filter(n => !q || [n.title, n.titleHi, n.body, n.bodyHi].join(' ').toLowerCase().indexOf(q) > -1);
+  if (!list.length) return emptyBox(t('noNotices'));
+  return '<div class="ledger">' + list.map(noticeEl).join('') + '</div>';
+}
+
+/* ---------- tasks ---------- */
+function taskEl(a) {
+  const isDone = doneSet.has(a.id);
+  const di = dueInfo(a.due);
+  const link = safeUrl(a.link);
+  const mode = { 'class': t('modeClass'), online: t('modeOnline'), email: t('modeEmail') }[a.mode] || '';
+  const meta = [mode, pick(a, 'note')].filter(Boolean).map(esc).join(' · ');
+  return '<div class="row task' + (isDone ? ' isdone' : '') + '"><label class="chk"><input type="checkbox" data-act="done" data-id="' + esc(a.id) + '"' + (isDone ? ' checked' : '') + ' aria-label="' + esc(pick(a, 'title')) + '"></label>' +
+    '<div class="rtext"><div class="tags"><span class="tag">' + esc(subjName(a.subject)) + '</span>' +
+    (a.marks ? '<span class="tag">' + esc(a.marks) + ' ' + esc(t('marksShort')) + '</span>' : '') + '</div>' +
+    '<h3>' + esc(pick(a, 'title')) + '</h3>' + (meta ? '<div class="muted">' + meta + '</div>' : '') +
+    (link ? '<a class="lnk" href="' + esc(link) + '" target="_blank" rel="noopener noreferrer">' + esc(t('qsheet')) + '</a>' : '') + '</div>' +
+    '<div class="due ' + (isDone ? 'ok' : di.cls) + '">' + esc(isDone ? t('done') : di.txt) + '<br><span>' + esc(fmtShort(a.due)) + '</span></div></div>';
+}
+
+/* ---------- dates ---------- */
+function dateItems() {
+  const items = (D.dates || []).filter(x => streamOk(x.streams)).map(x => ({ date: x.date, title: pick(x, 'title'), cat: x.cat }));
+  notices().forEach(n => { if (n.deadline) items.push({ date: n.deadline, title: t('lastDate') + ': ' + pick(n, 'title'), cat: n.cat }); });
+  return items;
+}
+function dateRow(x) {
+  const n = daysFrom(x.date);
+  const when = n < 0 ? t('passed') : n === 0 ? t('today') : n === 1 ? t('tomorrow') : fill(t('dueIn'), { n: n });
+  return '<div class="row drow">' + stub(x.date) + '<div class="rtext"><div class="tags"><span class="tag">' + esc(catName(x.cat)) + '</span></div><h3>' + esc(x.title) + '</h3></div>' +
+    '<div class="due ' + (n >= 0 && n <= 3 ? 'soon' : 'ok') + '">' + esc(when) + '</div></div>';
+}
+
+/* ---------- timetable ---------- */
+function periodRows(sid, day, live) {
+  const TT = D.timetable || {};
+  const per = TT.periods || [];
+  const ids = (TT[sid] || {})[day] || [];
+  if (!ids.length) return emptyBox(t('noClassToday'));
+  const nowD = new Date(), mins = nowD.getHours() * 60 + nowD.getMinutes();
+  let out = '', nextDone = false;
+  ids.forEach((id, i) => {
+    const p = per[i] || '';
+    const parts = p.split('-');
+    const am = toMin(parts[0]), bm = toMin(parts[1]);
+    const s = SUB[id] || {};
+    let st = '';
+    if (live) {
+      if (mins >= am && mins < bm) st = 'now';
+      else if (mins < am && !nextDone) { st = 'next'; nextDone = true; }
+      else if (mins >= bm) st = 'past';
+    }
+    out += '<div class="row period ' + st + '"><div class="ptime">' + esc(p.replace('-', '–')) + '</div>' +
+      '<div class="rtext"><h3>' + esc(pick(s, 'name') || id) + '</h3><div class="muted">' + esc([s.teacher, s.room].filter(Boolean).join(' · ')) + '</div></div>' +
+      (st === 'now' ? '<span class="tag new">' + esc(t('now')) + '</span>' : st === 'next' ? '<span class="tag">' + esc(t('next')) + '</span>' : '<span></span>') + '</div>';
+    if (TT.recessAfter === i + 1 && i + 1 < ids.length) out += '<div class="recess">' + esc(t('recess')) + (TT.recessTime ? ' · ' + esc(TT.recessTime.replace('-', '–')) : '') + '</div>';
+  });
+  return out;
+}
+
+/* ================= VIEWS ================= */
+function viewHome() {
+  const now = new Date(), dk = DAYKEYS[now.getDay()];
+  const online = safeUrl(CFG.onlineClass), wa = safeUrl(CFG.whatsapp);
+  let h = '';
+  if (CFG.demo) h += '<div class="demo">' + esc(t('demo')) + '</div>';
+  h += '<section class="today"><div class="big">' + now.getDate() + ' ' + esc(MON()[now.getMonth()]) + '</div><div class="sub">' +
+    esc(dayName(now.getDay())) + ' · ' + esc(pick(CFG, 'semester')) + ' · ' + esc(CFG.session || '') + '</div></section>';
+
+  h += '<section class="away"><div><h2>' + esc(t('away')) + '</h2><p>' + esc(t('awayText')) + '</p></div><div class="acts">' +
+    '<a class="btn" href="#updates">' + esc(t('whatTaught')) + '</a><a class="btn ghost" href="#notes">' + esc(t('getNotes')) + '</a>' +
+    (online ? '<a class="btn ghost" href="' + esc(online) + '" target="_blank" rel="noopener noreferrer">' + esc(t('joinOnline')) + '</a>' : '') +
+    (wa ? '<a class="btn ghost" href="' + esc(wa) + '" target="_blank" rel="noopener noreferrer">' + esc(t('waGroup')) + '</a>' : '') +
+    '</div></section>';
+
+  h += secHead(t('todayClasses'), 'timetable', t('tabTT'));
+  if (!stream) h += emptyBox(t('pickStream'));
+  else if (TTDAYS.indexOf(dk) < 0) h += emptyBox(t('noClassToday'));
+  else h += '<div class="ledger">' + periodRows(stream, dk, true) + '</div>';
+
+  let imp = notices().filter(n => n.important).slice(0, 3);
+  if (!imp.length) imp = notices().slice(0, 3);
+  h += secHead(t('impNotices'), 'notices', t('allNotices'));
+  h += imp.length ? '<div class="ledger">' + imp.map(noticeEl).join('') + '</div>' : emptyBox(t('noNotices'));
+
+  const due = tasks().filter(a => !doneSet.has(a.id)).slice(0, 4);
+  const dates = dateItems().filter(x => daysFrom(x.date) >= 0).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 4);
+  h += '<div class="cols"><div>' + secHead(t('dueSoon'), 'work', t('allTasks')) +
+    (due.length ? '<div class="ledger">' + due.map(taskEl).join('') + '</div>' : emptyBox(t('nothingDue'))) + '</div>' +
+    '<div>' + secHead(t('keyDates'), 'dates', t('allDates')) +
+    (dates.length ? '<div class="ledger">' + dates.map(dateRow).join('') + '</div>' : emptyBox(t('nothingDates'))) + '</div></div>';
+
+  h += secHead(t('quick'));
+  h += '<div class="tiles"><a class="tile" href="#notes">' + icon('book') + '<span>' + esc(t('tabNotes')) + '</span></a>' +
+    '<a class="tile" href="#syllabus">' + icon('syl') + '<span>' + esc(t('tabSyl')) + '</span></a>' +
+    '<a class="tile" href="#updates">' + icon('clock') + '<span>' + esc(t('tabUpd')) + '</span></a>' +
+    '<a class="tile" href="#help">' + icon('help') + '<span>' + esc(t('helpH')) + '</span></a></div>';
+  return h;
+}
+
+function viewNotices() {
+  cur.paint = () => { $('#res').innerHTML = resNotices(); };
+  const cats = Object.keys(CATS);
+  return pageHead('noticesH', 'noticesSub') + searchBox('nq', 'searchNotices') +
+    '<div class="chips">' + chip('nc', 'all', t('all')) + cats.map(c => chip('nc', c, catName(c))).join('') + '</div>' +
+    '<div id="res">' + resNotices() + '</div>';
+}
+
+function noteEl(n) {
+  const link = safeUrl(n.link);
+  const type = { notes: t('tNotes'), pyq: t('tPyq'), video: t('tVideo'), book: t('tBook'), other: t('tOther') }[n.type] || t('tOther');
+  const meta = [subjName(n.subject), n.added ? fmtShort(n.added) : '', n.by].filter(Boolean).map(esc).join(' · ');
+  return '<div class="row note"><div class="rtext"><div class="tags"><span class="tag">' + esc(type) + '</span></div><h3>' + esc(pick(n, 'title')) + '</h3><div class="muted">' + meta + '</div></div>' +
+    (link ? extLink(link, t('open'), 'pri sm') : '<span class="muted">' + esc(t('soon')) + '</span>') + '</div>';
+}
+function resNotes() {
+  const q = ui.mq.trim().toLowerCase();
+  const list = (D.notes || []).filter(itemOk)
+    .filter(n => ui.ms === 'all' || n.subject === ui.ms)
+    .filter(n => ui.mt === 'all' || n.type === ui.mt)
+    .filter(n => !q || [n.title, n.titleHi, SUB[n.subject] ? SUB[n.subject].name + ' ' + (SUB[n.subject].nameHi || '') : '', n.by].join(' ').toLowerCase().indexOf(q) > -1)
+    .sort((a, b) => (b.added || '').localeCompare(a.added || ''));
+  if (!list.length) return emptyBox(t('noNotes'));
+  return '<div class="ledger">' + list.map(noteEl).join('') + '</div>';
+}
+function viewNotes() {
+  if (ui.ms !== 'all' && !subjOk(ui.ms)) ui.ms = 'all';
+  cur.paint = () => { $('#res').innerHTML = resNotes(); };
+  const types = [['notes', 'tNotes'], ['pyq', 'tPyq'], ['video', 'tVideo'], ['book', 'tBook']];
+  return subTabs('study', 'notes') + pageHead('notesH', 'notesSub') + searchBox('mq', 'searchNotes') +
+    '<div class="chips">' + chip('ms', 'all', t('all')) + visibleSubjects().map(s => chip('ms', s.id, pick(s, 'name'))).join('') + '</div>' +
+    '<div class="chips">' + chip('mt', 'all', t('all')) + types.map(x => chip('mt', x[0], t(x[1]))).join('') + '</div>' +
+    '<div id="res">' + resNotes() + '</div>';
+}
+
+function resSyl() {
+  const q = ui.sq.trim().toLowerCase();
+  const cards = (D.syllabus || []).filter(x => subjOk(x.subject)).map(x => {
+    const s = SUB[x.subject] || {};
+    const nameHit = !q || ((s.name || '') + ' ' + (s.nameHi || '') + ' ' + (s.code || '')).toLowerCase().indexOf(q) > -1;
+    const units = (x.units || []).map((u, i) => ({ u: u, i: i })).filter(o => nameHit || (o.u[0] + ' ' + o.u[1]).toLowerCase().indexOf(q) > -1);
+    if (!units.length) return '';
+    const link = safeUrl(x.link);
+    const meta = [s.code, s.credits ? s.credits + ' ' + t('credits') : '', s.marks ? t('marksLbl') + ' ' + s.marks : ''].filter(Boolean).map(esc).join(' · ');
+    return '<article class="scard"><header><div><h3>' + esc(pick(s, 'name')) + '</h3><div class="muted">' + meta + '</div></div>' +
+      (link ? extLink(link, t('fullSyl'), 'sm') : '') + '</header>' +
+      units.map(o => '<details class="unit"' + (q ? ' open' : '') + '><summary><span class="un">' + esc(t('unit')) + ' ' + (o.i + 1) + '</span><span>' + esc(o.u[0]) + '</span></summary><p>' + esc(o.u[1]) + '</p></details>').join('') +
+      '</article>';
+  }).join('');
+  return cards || emptyBox(t('noSyl'));
+}
+function viewSyllabus() {
+  cur.paint = () => { $('#res').innerHTML = resSyl(); };
+  return subTabs('study', 'syllabus') + pageHead('sylH', 'sylSub') + searchBox('sq', 'searchSyl') + '<div id="res">' + resSyl() + '</div>';
+}
+
+function viewWork() {
+  const all = tasks();
+  const total = all.length, dn = all.filter(a => doneSet.has(a.id)).length;
+  let list = all;
+  if (ui.wf === 'pending') list = all.filter(a => !doneSet.has(a.id));
+  else if (ui.wf === 'done') list = all.filter(a => doneSet.has(a.id));
+  else list = all.slice().sort((a, b) => (doneSet.has(a.id) - doneSet.has(b.id)) || (a.due || '').localeCompare(b.due || ''));
+  const pct = total ? Math.round(dn * 100 / total) : 0;
+  return pageHead('workH', 'workSub') +
+    '<div class="progress"><div class="muted">' + esc(fill(t('doneOf'), { a: dn, b: total })) + '</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+    '<div class="chips">' + chip('wf', 'pending', t('pending')) + chip('wf', 'done', t('done')) + chip('wf', 'all', t('all')) + '</div>' +
+    (list.length ? '<div class="ledger">' + list.map(taskEl).join('') + '</div>' : emptyBox(t('noTasks')));
+}
+
+function viewTimetable() {
+  const dk = DAYKEYS[new Date().getDay()];
+  const todayKey = TTDAYS.indexOf(dk) > -1 ? dk : 'mon';
+  const sel = ui.td || todayKey;
+  let h = subTabs('class', 'timetable') + pageHead('ttH', 'ttSub');
+  if (!stream) {
+    return h + '<div class="empty">' + esc(t('noStreamTT')) + '<div class="acts">' +
+      STREAMS.map(s => '<button type="button" class="btn" data-act="stream" data-v="' + esc(s.id) + '">' + esc(lang === 'hi' ? s.hi : s.en) + '</button>').join('') + '</div></div>';
+  }
+  h += '<div class="chips">' + TTDAYS.map(d => '<button type="button" class="chip" data-act="set" data-k="td" data-v="' + d + '" aria-pressed="' + (sel === d) + '">' + esc(dayShort(d)) + (d === dk ? ' •' : '') + '</button>').join('') + '</div>';
+  return h + '<div class="ledger">' + periodRows(stream, sel, sel === dk) + '</div>';
+}
+
+function resUpd() {
+  const list = (D.updates || []).filter(itemOk).filter(u => ui.us === 'all' || u.subject === ui.us).sort(byDateDesc);
+  if (!list.length) return emptyBox(t('noUpd'));
+  const groups = []; let last = null;
+  list.forEach(u => { if (u.date !== last) { groups.push({ date: u.date, items: [] }); last = u.date; } groups[groups.length - 1].items.push(u); });
+  return groups.map(g => '<h3 class="dh">' + esc(relDay(g.date)) + '</h3><div class="ledger">' + g.items.map(u => {
+    const link = safeUrl(u.link);
+    return '<div class="row upd"><div class="rtext"><div class="tags"><span class="tag">' + esc(subjName(u.subject)) + '</span></div><h3>' + esc(pick(u, 'topic')) + '</h3>' +
+      (u.hw ? '<p class="hw"><b>' + esc(t('homework')) + ':</b> ' + esc(pick(u, 'hw')) + '</p>' : '') + '</div>' +
+      (link ? extLink(link, t('open'), 'sm') : '') + '</div>';
+  }).join('') + '</div>').join('');
+}
+function viewUpdates() {
+  if (ui.us !== 'all' && !subjOk(ui.us)) ui.us = 'all';
+  cur.paint = () => { $('#res').innerHTML = resUpd(); };
+  return subTabs('class', 'updates') + pageHead('updH', 'updSub') +
+    '<div class="chips">' + chip('us', 'all', t('all')) + visibleSubjects().map(s => chip('us', s.id, pick(s, 'name'))).join('') + '</div>' +
+    '<div id="res">' + resUpd() + '</div>';
+}
+
+function viewDates() {
+  const items = dateItems();
+  const up = items.filter(x => daysFrom(x.date) >= 0).sort((a, b) => a.date.localeCompare(b.date));
+  const old = items.filter(x => daysFrom(x.date) < 0).sort((a, b) => b.date.localeCompare(a.date));
+  return subTabs('class', 'dates') + pageHead('datesH', 'datesSub') +
+    secHead(t('upcoming')) + (up.length ? '<div class="ledger">' + up.map(dateRow).join('') + '</div>' : emptyBox(t('nothingDates'))) +
+    (old.length ? secHead(t('past')) + '<div class="ledger">' + old.map(dateRow).join('') + '</div>' : '');
+}
+
+function resFaq() {
+  const q = ui.hq.trim().toLowerCase();
+  const list = (D.faq || []).filter(f => !q || [f.q, f.qHi, f.a, f.aHi].join(' ').toLowerCase().indexOf(q) > -1);
+  if (!list.length) return emptyBox(t('noFaq'));
+  return '<div class="ledger faq">' + list.map(f => '<details' + (q ? ' open' : '') + '><summary><span>' + esc(pick(f, 'q')) + '</span></summary><p>' + esc(pick(f, 'a')) + '</p></details>').join('') + '</div>';
+}
+function viewHelp() {
+  cur.paint = () => { $('#res').innerHTML = resFaq(); };
+  const links = (D.links || []).map(l => safeUrl(l.url) ? '<div class="row link"><div class="rtext"><h3>' + esc(pick(l, 'label')) + '</h3><div class="muted">' + esc(pick(l, 'note')) + '</div></div>' + extLink(l.url, t('open'), 'sm') + '</div>' : '').join('');
+  const contacts = (D.contacts || []).map((c, i) => '<div class="row link"><div class="rtext"><h3>' + esc(pick(c, 'role')) + '</h3><div class="muted">' + esc(pick(c, 'name')) + '</div><div class="phone">' + esc(c.phone) + '</div></div>' +
+    '<button type="button" class="btn sm" data-act="copyv" data-v="' + esc(c.phone) + '">' + icon('copy') + ' ' + esc(t('copy')) + '</button></div>').join('');
+  return pageHead('helpH', 'helpSub') + secHead(t('faq')) + searchBox('hq', 'searchFaq') + '<div id="res">' + resFaq() + '</div>' +
+    (links ? secHead(t('links')) + '<div class="ledger">' + links + '</div>' : '') +
+    (contacts ? secHead(t('contacts')) + '<div class="ledger">' + contacts + '</div>' : '');
+}
+
+/* ================= shell ================= */
+const ROUTES = { home: viewHome, notices: viewNotices, notes: viewNotes, syllabus: viewSyllabus, work: viewWork, timetable: viewTimetable, updates: viewUpdates, dates: viewDates, help: viewHelp };
+const GROUP = { home: 'home', notices: 'notices', notes: 'study', syllabus: 'study', work: 'work', timetable: 'cls', updates: 'cls', dates: 'cls', help: 'help' };
+const NAV = [['home', 'home', 'home'], ['notices', 'bell', 'notices'], ['study', 'book', 'notes'], ['work', 'list', 'work'], ['cls', 'clock', 'timetable'], ['help', 'help', 'help']];
+
+function route() { const r = (location.hash || '').replace('#', ''); return ROUTES[r] ? r : 'home'; }
+function setNav(r) {
+  document.querySelectorAll('.nav-b').forEach(a => { if (a.dataset.g === GROUP[r]) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+}
+function render(reset) {
+  cur = {};
+  const r = route();
+  view.innerHTML = ROUTES[r]();
+  view.classList.remove('view-in'); void view.offsetWidth; if (reset) view.classList.add('view-in');
+  setNav(r);
+  if (reset) window.scrollTo(0, 0);
+}
+function repaint() { const y = window.scrollY; render(false); window.scrollTo(0, y); }
+
+function effectiveTheme() { return theme || ((window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'); }
+function applyTheme() { if (theme) document.documentElement.setAttribute('data-theme', theme); }
+
+function renderChrome() {
+  document.documentElement.lang = lang;
+  $('#nav').innerHTML = NAV.map(n => '<a class="nav-b' + (n[0] === 'help' ? ' nav-help' : '') + '" href="#' + n[2] + '" data-g="' + n[0] + '">' + icon(n[1]) + '<span>' + esc(t(n[0])) + '</span></a>').join('');
+  const segs = '<button type="button" data-act="stream" data-v="all" aria-pressed="' + (!stream) + '">' + esc(t('all')) + '</button>' +
+    STREAMS.map(s => '<button type="button" data-act="stream" data-v="' + esc(s.id) + '" aria-pressed="' + (stream === s.id) + '">' + esc(lang === 'hi' ? s.hi : s.en) + '</button>').join('');
+  $('#top').innerHTML = '<div class="brand"><div class="mark">' + esc(CFG.short || 'CS') + '</div><div class="brand-t"><b>' + esc(pick(CFG, 'name')) + '</b><span>' + esc(pick(CFG, 'city')) + '</span></div></div>' +
+    '<div class="tools"><a class="ibtn help-btn" href="#help" aria-label="' + esc(t('helpH')) + '">' + icon('help') + '</a>' +
+    '<button type="button" class="ibtn" data-act="theme" aria-label="' + esc(t('theme')) + '">' + icon(effectiveTheme() === 'dark' ? 'sun' : 'moon') + '</button>' +
+    '<button type="button" class="ibtn" data-act="lang" aria-label="Language">' + (lang === 'en' ? 'हिन्दी' : 'English') + '</button></div>' +
+    '<div class="seg" role="group" aria-label="' + esc(t('streamLabel')) + '">' + segs + '</div>';
+  $('#foot').innerHTML = '<p>' + esc(t('verify')) + '</p>' + (CFG.updated ? '<p>' + esc(t('updated')) + ': ' + esc(fmtShort(CFG.updated)) + '</p>' : '');
+  setNav(route());
+}
+
+/* ---------- toast + copy ---------- */
+let toastTimer;
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 1800);
+}
+function fallbackCopy(txt) {
+  const ta = document.createElement('textarea');
+  ta.value = txt; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  ta.remove(); toast(ok ? t('copied') : t('copyFail'));
+}
+function copyText(txt) {
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(() => toast(t('copied')), () => fallbackCopy(txt));
+  else fallbackCopy(txt);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const a = el.dataset.act;
+  if (a === 'stream') { stream = el.dataset.v === 'all' ? null : el.dataset.v; store.set('stream', stream); renderChrome(); repaint(); }
+  else if (a === 'lang') { lang = lang === 'en' ? 'hi' : 'en'; store.set('lang', lang); renderChrome(); repaint(); }
+  else if (a === 'theme') { theme = effectiveTheme() === 'dark' ? 'light' : 'dark'; store.set('theme', theme); applyTheme(); renderChrome(); }
+  else if (a === 'set') { ui[el.dataset.k] = el.dataset.v; repaint(); }
+  else if (a === 'done') { if (el.checked) doneSet.add(el.dataset.id); else doneSet.delete(el.dataset.id); store.set('done', Array.from(doneSet)); repaint(); }
+  else if (a === 'copyn') {
+    const n = (D.notices || []).filter(x => x.id === el.dataset.id)[0]; if (!n) return;
+    const link = safeUrl(n.link);
+    copyText('*' + pick(n, 'title') + '*\n' + pick(n, 'body') + (link ? '\n' + link : '') + '\n- ' + pick(CFG, 'name'));
+  }
+  else if (a === 'copyv') copyText(el.dataset.v);
+});
+document.addEventListener('input', e => {
+  const k = e.target.dataset && e.target.dataset.q;
+  if (k) { ui[k] = e.target.value; if (cur.paint) cur.paint(); }
+});
+window.addEventListener('hashchange', () => { render(true); });
+
+applyTheme();
+renderChrome();
+render(true);
+
+try {
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !window.claude) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+} catch (e) {}
+})();
+</script>
+</body>
+</html>
